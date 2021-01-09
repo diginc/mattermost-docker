@@ -1,0 +1,54 @@
+[global]
+  checkNewVersion = true
+  sendAnonymousUsage = false
+
+[log]
+  level = "WARNING"
+
+[api]
+  insecure = true
+  dashboard = true
+  debug = false
+
+[entryPoints]
+  [entryPoints.unsecure]
+    address = ":80"
+
+  [entryPoints.unsecure.http]
+    [entryPoints.unsecure.http.redirections]
+      [entryPoints.unsecure.http.redirections.entryPoint]
+        to = "secure"
+        scheme = "https"
+
+[entryPoints.secure]
+  address = ":443"
+
+    [entryPoints.secure.http.tls]
+      certResolver = "lets-encr"
+
+[providers.docker]
+  endpoint = "unix:///var/run/docker.sock"
+  watch = true
+  exposedByDefault = true
+  # network = "dmz"
+  constraints = "Label(`public.https`,`true`)"
+
+[certificatesResolvers.lets-encr.acme]
+  email = "webmaster@whateveryourdomainis.com"
+  storage = "acme.json"
+
+  [certificatesResolvers.lets-encr.acme.dnsChallenge]
+    provider = "namecheap"
+    resolvers = ["156.154.132.200:53", "156.154.133.200:53", "1.1.1.1:53"]
+
+[tls.options]
+ [tls.options.default]
+   minVersion = "VersionTLS12"
+   cipherSuites = [
+     "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+     "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+     "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+     "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+     "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305",
+     "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"
+   ]

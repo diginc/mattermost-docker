@@ -6,3 +6,9 @@
 
 # Generated data
 volumes
+
+# More
+*.sw*
+.env
+backups/
+traefik/acme.json

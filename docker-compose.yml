@@ -50,15 +50,35 @@ services:
 
       # in case your config is not in default location
       #- MM_CONFIG=/mattermost/config/config.json
+    labels:
+      - "public.https=true"
+      - "traefik.http.services.test.loadbalancer.server.port=8000"
+      - "traefik.http.routers.test.rule=Host(`mattermost.whateveryourdomainis.com`)"
+      - "traefik.http.routers.test.entrypoints=secure"
 
-  web:
-    build: web
+  traefik:
+    image: traefik:v2.2
+    container_name: dmz_traefik
+    restart: unless-stopped
+    domainname: whateveryourdomainis.com
     ports:
       - "80:80"
       - "443:443"
-    read_only: true
-    restart: unless-stopped
+      - "8080:8080"
     volumes:
-      # This directory must have cert files if you want to enable SSL
-      - ./volumes/web/cert:/cert:ro
+      - ./traefik/traefik.toml:/traefik.toml
+      - ./traefik/acme.json:/acme.json
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - /etc/localtime:/etc/localtime:ro
+    networks:
+      dmz:
+        ipv4_address: 192.168.199.200
+    dns:
+      - 1.1.1.1
+    environment:
+      # REQUIRED FOR HTTPS https://doc.traefik.io/traefik/v2.0/https/acme/#dnschallenge
+      # Setup your passwords in .env and empty keys for your provier here
+      - NAMECHEAP_API_USER
+      - NAMECHEAP_API_KEY
+
+
